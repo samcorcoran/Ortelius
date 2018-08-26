@@ -98,9 +98,8 @@ public class VisualizeWorld : MonoBehaviour {
         {
             int currentNodeVertexIndex = boundaryVertexIndices[i];
             int nextNodeVertexIndex = boundaryVertexIndices[(i + 1) % boundaryVertexIndices.Length];
-
-            triangles.Add(nextNodeVertexIndex);
             triangles.Add(currentNodeVertexIndex);
+            triangles.Add(nextNodeVertexIndex);
             triangles.Add(centreVertexIndex);
         }
         MeshChanged = true;

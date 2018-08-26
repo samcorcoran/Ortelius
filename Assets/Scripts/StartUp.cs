@@ -51,7 +51,7 @@ public class StartUp : MonoBehaviour {
         while (await nodeStream.ResponseStream.MoveNext() && runAsyncTasks)
         {
             CartesianStructure cartesianStructure = nodeStream.ResponseStream.Current;
-            WorldVisualizer.AddNodeVertex(cartesianStructure.Id, new Vector3((float)cartesianStructure.X* WorldScaleFactor, (float)cartesianStructure.Y* WorldScaleFactor, (float)cartesianStructure.Z* WorldScaleFactor));
+            WorldVisualizer.AddNodeVertex(cartesianStructure.Id, new Vector3((float)cartesianStructure.X* WorldScaleFactor, (float)cartesianStructure.Z* WorldScaleFactor, (float)cartesianStructure.Y * WorldScaleFactor));
             if (nodeCount++ % 100 == 0)
             {
                 Debug.Log("Total vertices: " + nodeCount.ToString());
