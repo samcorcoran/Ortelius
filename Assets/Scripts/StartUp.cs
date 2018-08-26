@@ -24,6 +24,7 @@ public class StartUp : MonoBehaviour {
         Debug.Log("Requesting world over GRPC");
         WorldRequest = new WorldRequest { WorldId = WorldSeed };
         var worldGenerationResult = Client.GenerateWorld(WorldRequest);
+        WorldScaleFactor = (float)GetWorldResultQuantity(worldGenerationResult, "radius")/1000f;
         Debug.Log(worldGenerationResult.Status);
 
         if (worldGenerationResult.Status == WorldGenerationStatus.Failed)
@@ -97,5 +98,17 @@ public class StartUp : MonoBehaviour {
         var theta = UnityEngine.Random.Range(0f, 1.0f) * 2 * Mathf.PI;
         var phi = Mathf.Asin(UnityEngine.Random.Range(0f, 1.0f) * 2 - 1);
         return new Vector3(Mathf.Cos(theta) * Mathf.Cos(phi) * WorldScaleFactor, Mathf.Sin(theta) * Mathf.Cos(phi) * WorldScaleFactor, Mathf.Sin(phi) * WorldScaleFactor);
+    }
+
+    private double GetWorldResultQuantity(WorldGenerationResult result, string quantityName)
+    {
+        foreach (var quantity in result.World.Quantities)
+        {
+            if (quantity.Key.Name.Equals(quantityName))
+            {
+                return quantity.Value;
+            }
+        }
+        return 0.0;
     }
 }
