@@ -8,8 +8,7 @@ public class VisualizeWorld : MonoBehaviour {
 
     private Mesh Mesh;
     private Dictionary<string, Cell> KnownCells;
-    private Dictionary<string, int> NodeIdToVertexIndex;
-
+    private Dictionary<string, Vector3> NodeIdToVector3Position;
 
     private bool MeshChanged = false;
 
@@ -21,14 +20,12 @@ public class VisualizeWorld : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        NodeIdToVertexIndex = new Dictionary<string, int>();
+        NodeIdToVector3Position = new Dictionary<string, Vector3>();
         KnownCells = new Dictionary<string, Cell>();
-        // Mesh = GetComponent<Mesh>();
         vertices = new List<Vector3>();
         triangles = new List<int>();
         colours = new List<Color>();
         uvs = new List<Vector2>();
-
     }
 
     void Awake()
@@ -36,12 +33,12 @@ public class VisualizeWorld : MonoBehaviour {
         GetComponent<MeshFilter>().mesh = Mesh = new Mesh();
     }
 
-        // Update is called once per frame
+    // Update is called once per frame
     void Update () {
 		if (MeshChanged)
         {
-            Mesh.triangles = triangles.ToArray();
             Mesh.vertices = vertices.ToArray();
+            Mesh.triangles = triangles.ToArray();
             Mesh.colors = colours.ToArray();
             Mesh.uv = uvs.ToArray();
             Mesh.RecalculateNormals();
@@ -61,10 +58,9 @@ public class VisualizeWorld : MonoBehaviour {
         }
     }
 
-    // TODO: Function to receive new data through
     public void AddCell(Cell newCell) {
         KnownCells.Add(newCell.Id, newCell);
-        var centreVertexIndex = NodeIdToVertexIndex[newCell.Id];
+        // Retrieve colour for cell
         float red = 0.0f;
         float green = 0.0f;
         float blue = 0.0f;
@@ -84,43 +80,34 @@ public class VisualizeWorld : MonoBehaviour {
             }
         }
         var vertexColour = new Color(red, green, blue);
+        // Vertices
+        var centreVertexIndex = vertices.Count;
+        vertices.Add(NodeIdToVector3Position[newCell.Id]);
+        colours.Add(vertexColour);
+        // Create vertices for boundary nodes
+        int[] boundaryVertexIndices = new int[newCell.Perimeter.Count];
         for (var i = 0; i < newCell.Perimeter.Count; i++)
         {
-            triangles.Add(NodeIdToVertexIndex[newCell.Perimeter[(i + 1) % newCell.Perimeter.Count].Id]);
-            triangles.Add(NodeIdToVertexIndex[newCell.Perimeter[i].Id]);
-            triangles.Add(centreVertexIndex);
-            colours[centreVertexIndex] = vertexColour;
-            colours[NodeIdToVertexIndex[newCell.Perimeter[i].Id]] = vertexColour;
-            colours[NodeIdToVertexIndex[newCell.Perimeter[(i + 1) % newCell.Perimeter.Count].Id]] = vertexColour;
+            int nodeVertexId = vertices.Count;
+            vertices.Add(NodeIdToVector3Position[newCell.Perimeter[i].Id]);
+            colours.Add(vertexColour);
+            boundaryVertexIndices[i] = nodeVertexId;
         }
-        //AddTriangle();
+        // Create triangles
+        for (var i = 0; i < boundaryVertexIndices.Length; i++)
+        {
+            int currentNodeVertexIndex = boundaryVertexIndices[i];
+            int nextNodeVertexIndex = boundaryVertexIndices[(i + 1) % boundaryVertexIndices.Length];
+
+            triangles.Add(nextNodeVertexIndex);
+            triangles.Add(currentNodeVertexIndex);
+            triangles.Add(centreVertexIndex);
+        }
         MeshChanged = true;
     }
 
     public void AddNodeVertex(string nodeId, Vector3 vertex)
     {
-        // Get node verts and store them
-        var nextIndex = vertices.Count;
-        if (nextIndex % 100 == 0)
-        {
-            Debug.Log("Total vertices: " + nextIndex.ToString());
-        }
-        vertices.Add(vertex);
-        colours.Add(Color.blue);
-        uvs.Add(new Vector2(vertex.x, vertex.y));
-        NodeIdToVertexIndex.Add(nodeId, nextIndex);
-        MeshChanged = true;
+        NodeIdToVector3Position.Add(nodeId, vertex);
     }
-
-    void AddTriangle(Vector3 v1, Vector3 v2, Vector3 v3)
-    {
-        int vertexIndex = vertices.Count;
-        vertices.Add(v1);
-        vertices.Add(v2);
-        vertices.Add(v3);
-        triangles.Add(vertexIndex);
-        triangles.Add(vertexIndex + 1);
-        triangles.Add(vertexIndex + 2);
-    }
-
 }

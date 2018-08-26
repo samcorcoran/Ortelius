@@ -47,10 +47,15 @@ public class StartUp : MonoBehaviour {
     {
         runAsyncTasks = true;
         var nodeStream = Client.GetCartesianWorld(WorldRequest);
+        int nodeCount = 0;
         while (await nodeStream.ResponseStream.MoveNext() && runAsyncTasks)
         {
             CartesianStructure cartesianStructure = nodeStream.ResponseStream.Current;
             WorldVisualizer.AddNodeVertex(cartesianStructure.Id, new Vector3((float)cartesianStructure.X* WorldScaleFactor, (float)cartesianStructure.Y* WorldScaleFactor, (float)cartesianStructure.Z* WorldScaleFactor));
+            if (nodeCount++ % 100 == 0)
+            {
+                Debug.Log("Total vertices: " + nodeCount.ToString());
+            }
         }
         var cellStream = Client.GetWorldCells(WorldRequest);
         while (await cellStream.ResponseStream.MoveNext() && runAsyncTasks)
