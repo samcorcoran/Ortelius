@@ -13,7 +13,6 @@ public class StartUp : MonoBehaviour {
     private WorldRequest WorldRequest;
     public VisualizeWorld WorldVisualizer;
 
-    public float WorldScaleFactor = 10f;
     public Boolean runAsyncTasks = true;
 
     // Use this for initialization
@@ -24,7 +23,7 @@ public class StartUp : MonoBehaviour {
         Debug.Log("Requesting world over GRPC");
         WorldRequest = new WorldRequest { WorldId = WorldSeed };
         var worldGenerationResult = Client.GenerateWorld(WorldRequest);
-        WorldScaleFactor = (float)GetWorldResultQuantity(worldGenerationResult, "radius")/1000f;
+        WorldVisualizer.SetWorldScaleFactor((float)GetWorldResultQuantity(worldGenerationResult, "radius"));
         Debug.Log(worldGenerationResult.Status);
 
         if (worldGenerationResult.Status == WorldGenerationStatus.Failed)
@@ -52,7 +51,7 @@ public class StartUp : MonoBehaviour {
         while (await nodeStream.ResponseStream.MoveNext() && runAsyncTasks)
         {
             CartesianStructure cartesianStructure = nodeStream.ResponseStream.Current;
-            WorldVisualizer.AddNodeVertex(cartesianStructure.Id, new Vector3((float)cartesianStructure.X* WorldScaleFactor, (float)cartesianStructure.Z* WorldScaleFactor, (float)cartesianStructure.Y * WorldScaleFactor));
+            WorldVisualizer.AddNodeVertex(cartesianStructure.Id, (float)cartesianStructure.X, (float)cartesianStructure.Y, (float)cartesianStructure.Z);
             if (nodeCount++ % 100 == 0)
             {
                 Debug.Log("Total vertices: " + nodeCount.ToString());
@@ -95,13 +94,6 @@ public class StartUp : MonoBehaviour {
 
     }
     */
-
-    private Vector3 GenerateRandomSpherePoint()
-    {
-        var theta = UnityEngine.Random.Range(0f, 1.0f) * 2 * Mathf.PI;
-        var phi = Mathf.Asin(UnityEngine.Random.Range(0f, 1.0f) * 2 - 1);
-        return new Vector3(Mathf.Cos(theta) * Mathf.Cos(phi) * WorldScaleFactor, Mathf.Sin(theta) * Mathf.Cos(phi) * WorldScaleFactor, Mathf.Sin(phi) * WorldScaleFactor);
-    }
 
     private double GetWorldResultQuantity(WorldGenerationResult result, string quantityName)
     {

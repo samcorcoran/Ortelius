@@ -8,6 +8,8 @@ public class VisualizeWorld : MonoBehaviour {
 
     private PanelInfoController panelInfoController;
 
+    private float WorldScaleFactor = 10f;
+
     private static Color HOVERED_CELL_COLOUR = Color.magenta;
     private static Color SELECTED_CELL_COLOUR = Color.red;
 
@@ -64,6 +66,11 @@ public class VisualizeWorld : MonoBehaviour {
             ColoursChanged = false;
         }
 	}
+
+    public void SetWorldScaleFactor(float worldRadiusKm)
+    {
+        WorldScaleFactor = worldRadiusKm / 1000f;
+    }
 
     public void HoverCell(Cell cell)
     {
@@ -217,9 +224,11 @@ public class VisualizeWorld : MonoBehaviour {
         ColoursChanged = true;
     }
 
-    public void AddNodeVertex(string nodeId, Vector3 vertex)
+    public void AddNodeVertex(string nodeId, float x, float y, float z)
     {
-        NodeIdToVector3Position.Add(nodeId, vertex);
+        // Scale from unit sphere positions to visualized scale
+        // Switch z and y values to change coordinate system from z-up to y-up
+        NodeIdToVector3Position.Add(nodeId, new Vector3(x*WorldScaleFactor, z*WorldScaleFactor, y * WorldScaleFactor));
     }
 
     public Cell GetContainingCell(Vector3 targetPoint)
