@@ -7,7 +7,7 @@ using UnityEngine;
 public class VisualizeWorld : MonoBehaviour {
 
     private static Color HOVERED_CELL_COLOUR = Color.magenta;
-    private static Color SELECTED_CELL_COLOUR = Color.cyan;
+    private static Color SELECTED_CELL_COLOUR = Color.red;
 
     private Mesh Mesh;
     private Dictionary<string, Cell> KnownCells;
@@ -19,13 +19,11 @@ public class VisualizeWorld : MonoBehaviour {
     
     private bool VerticesChanged = false;
     private bool ColoursChanged = false;
-    
 
     List<Vector3> vertices;
     List<int> triangles;
     List<Color> colours;
     List<Vector2> uvs;
-
 
     // Use this for initialization
     void Start () {
