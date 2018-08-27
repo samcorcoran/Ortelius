@@ -157,7 +157,11 @@ public class UserInputController : MonoBehaviour {
             Debug.Log("Cell:");
             Debug.Log(cell.Id.ToString());
             Debug.Log(cell.Position.Latitude.ToString() + ", " + cell.Position.Longitude.ToString());
+            WorldVisualizer.HoverCell(cell);
+            if (Input.GetMouseButtonDown(0))
+            {
+                WorldVisualizer.SelectCell(cell);
+            }
         }
-
     }
 }

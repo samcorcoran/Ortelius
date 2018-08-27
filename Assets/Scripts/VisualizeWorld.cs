@@ -6,11 +6,20 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class VisualizeWorld : MonoBehaviour {
 
+    private static Color HOVERED_CELL_COLOUR = Color.magenta;
+    private static Color SELECTED_CELL_COLOUR = Color.cyan;
+
     private Mesh Mesh;
     private Dictionary<string, Cell> KnownCells;
     private Dictionary<string, Vector3> NodeIdToVector3Position;
+    private Dictionary<string, List<int>> CellIdToVertexVectors;
 
-    private bool MeshChanged = false;
+    private Cell hoveredCell = null;
+    private Cell selectedCell = null;
+    
+    private bool VerticesChanged = false;
+    private bool ColoursChanged = false;
+    
 
     List<Vector3> vertices;
     List<int> triangles;
@@ -20,8 +29,6 @@ public class VisualizeWorld : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        NodeIdToVector3Position = new Dictionary<string, Vector3>();
-        KnownCells = new Dictionary<string, Cell>();
         vertices = new List<Vector3>();
         triangles = new List<int>();
         colours = new List<Color>();
@@ -32,27 +39,108 @@ public class VisualizeWorld : MonoBehaviour {
     {
         GetComponent<MeshFilter>().mesh = Mesh = new Mesh();
         GetComponent<MeshCollider>().sharedMesh = Mesh;
+
+        KnownCells = new Dictionary<string, Cell>();
+        NodeIdToVector3Position = new Dictionary<string, Vector3>();
+        CellIdToVertexVectors = new Dictionary<string, List<int>>();
     }
 
     // Update is called once per frame
     void Update () {
-		if (MeshChanged)
+		if (VerticesChanged)
         {
             Mesh.vertices = vertices.ToArray();
             Mesh.triangles = triangles.ToArray();
-            Mesh.colors = colours.ToArray();
             Mesh.uv = uvs.ToArray();
             Mesh.RecalculateNormals();
             Mesh.RecalculateBounds();
             Mesh.RecalculateTangents();
             GetComponent<MeshCollider>().sharedMesh = Mesh;
-            MeshChanged = false;
+            VerticesChanged = false;
+        }
+        if (ColoursChanged)
+        {
+            Mesh.colors = colours.ToArray();
+            ColoursChanged = false;
         }
 	}
 
+    public void HoverCell(Cell cell)
+    {
+        if (hoveredCell == cell)
+        {
+            return;
+        }
+        else if (hoveredCell != null)
+        {
+            if (hoveredCell == selectedCell)
+            {
+                SetSelectedColourForCell(hoveredCell);
+            }
+            else
+            {
+                RestoreColorForCell(hoveredCell);
+            }
+        }
+        // Highlight newly selected cell's vertices
+        SetHoveredColourForCell(cell);
+        hoveredCell = cell;
+        ColoursChanged = true;
+    }
+
+    public void SelectCell(Cell cell)
+    {
+        if (selectedCell == cell)
+        {
+            return;
+        }
+        else if (selectedCell != null)
+        {
+            RestoreColorForCell(selectedCell);
+        }
+        // Highlight newly selected cell's vertices
+        SetSelectedColourForCell(cell);
+        selectedCell = cell;
+        ColoursChanged = true;
+    }
+
+    private void RestoreColorForCell(Cell cell)
+    {
+        Color normalCellColour = ColorOfCell(cell);
+        SetColourForCell(cell, normalCellColour);
+    }
+
+    private void SetHoveredColourForCell(Cell cell)
+    {
+        SetColourForCell(cell, HOVERED_CELL_COLOUR);
+    }
+
+    private void SetSelectedColourForCell(Cell cell)
+    {
+        SetColourForCell(cell, SELECTED_CELL_COLOUR);
+    }
+
+    private void SetColourForCell(Cell cell, Color colour)
+    {
+        foreach (var vertexIndex in CellIdToVertexVectors[cell.Id])
+        {
+            SetColorForVertex(vertexIndex, colour);
+        }
+    }
+
+    private void SetColorForVertex(int vertexIndex, Color colour)
+    {
+        colours[vertexIndex] = colour;
+    }
+
+    private void RestoreColorForVertex(int vertexIndex)
+    {
+        Mesh.colors.SetValue(colours[vertexIndex], vertexIndex);
+    }
+
     private void OnDrawGizmos()
     {
-        if (MeshChanged)
+        if (VerticesChanged)
         {
             /*
             foreach (var vertex_index in NodeIdToVertexIndex.Values)
@@ -63,17 +151,13 @@ public class VisualizeWorld : MonoBehaviour {
         }
     }
 
-    public void AddCell(Cell newCell) {
-        KnownCells.Add(newCell.Id, newCell);
-        if (KnownCells.Count % 100 == 0)
-        {
-            Debug.Log("Processed cells " + KnownCells.Count.ToString());
-        }
+    private Color ColorOfCell(Cell cell)
+    {
         // Retrieve colour for cell
         float red = 0.0f;
         float green = 0.0f;
         float blue = 0.0f;
-        foreach (var quantity in newCell.Quantities)
+        foreach (var quantity in cell.Quantities)
         {
             if (quantity.Key.Name.Equals("red"))
             {
@@ -88,10 +172,22 @@ public class VisualizeWorld : MonoBehaviour {
                 blue = (float)quantity.Value / 255.0f;
             }
         }
-        var vertexColour = new Color(red, green, blue);
+        return new Color(red, green, blue);
+    }
+
+    public void AddCell(Cell newCell) {
+        KnownCells.Add(newCell.Id, newCell);
+        CellIdToVertexVectors.Add(newCell.Id, new List<int>());
+        if (KnownCells.Count % 100 == 0)
+        {
+            Debug.Log("Processed cells " + KnownCells.Count.ToString());
+        }
+        var vertexColour = ColorOfCell(newCell);
         // Vertices
         var centreVertexIndex = vertices.Count;
         vertices.Add(NodeIdToVector3Position[newCell.Id]);
+        // Remember cell centre vector for this cell
+        CellIdToVertexVectors[newCell.Id].Add(centreVertexIndex);
         colours.Add(vertexColour);
         // Create vertices for boundary nodes
         int[] boundaryVertexIndices = new int[newCell.Perimeter.Count];
@@ -99,6 +195,8 @@ public class VisualizeWorld : MonoBehaviour {
         {
             int nodeVertexId = vertices.Count;
             vertices.Add(NodeIdToVector3Position[newCell.Perimeter[i].Id]);
+            // Remember boundary node vectors for this cell
+            CellIdToVertexVectors[newCell.Id].Add(nodeVertexId);
             colours.Add(vertexColour);
             boundaryVertexIndices[i] = nodeVertexId;
         }
@@ -113,9 +211,10 @@ public class VisualizeWorld : MonoBehaviour {
         }
     }
 
-    public void RedrawMesh()
+    public void MeshFinished()
     {
-        MeshChanged = true;
+        VerticesChanged = true;
+        ColoursChanged = true;
     }
 
     public void AddNodeVertex(string nodeId, Vector3 vertex)

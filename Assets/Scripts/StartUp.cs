@@ -64,7 +64,7 @@ public class StartUp : MonoBehaviour {
             Cell cell = cellStream.ResponseStream.Current;
             WorldVisualizer.AddCell(cell);
         }
-        WorldVisualizer.RedrawMesh();
+        WorldVisualizer.MeshFinished();
     }
 
     // Update is called once per frame
