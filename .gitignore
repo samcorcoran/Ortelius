@@ -1,0 +1,10 @@
+*.meta
+Assets/Plugins/*
+.vs/*
+Library/*
+Assets/Ebstorf/*
+ASsets/proto/*
+Temp/*
+obj/*
+Packages/*
+ProjectSettings/*
