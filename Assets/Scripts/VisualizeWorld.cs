@@ -6,7 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class VisualizeWorld : MonoBehaviour {
 
-    private PanelInfoController panelInfoController;
+    public PanelInfoController panelInfoController;
 
     private float WorldScaleFactor = 10f;
 
@@ -109,6 +109,8 @@ public class VisualizeWorld : MonoBehaviour {
         SetSelectedColourForCell(cell);
         selectedCell = cell;
         ColoursChanged = true;
+        // Update UI panel
+        panelInfoController.SetDisplayedCell(cell);
     }
 
     private void RestoreColorForCell(Cell cell)
