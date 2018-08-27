@@ -64,6 +64,7 @@ public class StartUp : MonoBehaviour {
             Cell cell = cellStream.ResponseStream.Current;
             WorldVisualizer.AddCell(cell);
         }
+        WorldVisualizer.RedrawMesh();
     }
 
     // Update is called once per frame
@@ -76,7 +77,7 @@ public class StartUp : MonoBehaviour {
         runAsyncTasks = false;
         channel.ShutdownAsync();
     }
-
+    /*
     private async void RequestCellData()
     {
         var streamingstuff = Client.GetWorldCells(WorldRequest);
@@ -86,12 +87,14 @@ public class StartUp : MonoBehaviour {
             // add to list of all cells
             WorldVisualizer.AddCell(cell);
         }
+        WorldVisualizer.RedrawMesh();
     }
 
     private void RequestNodeData()
     {
 
     }
+    */
 
     private Vector3 GenerateRandomSpherePoint()
     {

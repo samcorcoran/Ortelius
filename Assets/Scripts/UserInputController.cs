@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class UserInputController : MonoBehaviour {
 
+    VisualizeWorld WorldVisualizer;
+
     Camera worldCamera;
     Vector3 cameraFocusPoint = Vector3.zero;
 
@@ -27,6 +29,7 @@ public class UserInputController : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+        WorldVisualizer = GetComponentInParent<VisualizeWorld>();
         worldCamera = Camera.main;
         worldCamera.transform.LookAt(cameraFocusPoint);
 	}
@@ -35,6 +38,7 @@ public class UserInputController : MonoBehaviour {
     void Update()
     {
         HandleKeyInput();
+        HandleMouseInput();
     }
 
     private void FixedUpdate()
@@ -138,5 +142,22 @@ public class UserInputController : MonoBehaviour {
         {
             CentreCameraOnHome();
         }
+    }
+
+    public void HandleMouseInput()
+    {
+        // Get mouse screen position
+        Ray placefinder = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(placefinder, out hit, 300))
+        {
+            Debug.Log(hit.point);
+            // Get Id of nearest cell
+            var cell = WorldVisualizer.GetContainingCell(hit.point);
+            Debug.Log("Cell:");
+            Debug.Log(cell.Id.ToString());
+            Debug.Log(cell.Position.Latitude.ToString() + ", " + cell.Position.Longitude.ToString());
+        }
+
     }
 }

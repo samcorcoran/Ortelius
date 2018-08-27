@@ -31,6 +31,7 @@ public class VisualizeWorld : MonoBehaviour {
     void Awake()
     {
         GetComponent<MeshFilter>().mesh = Mesh = new Mesh();
+        GetComponent<MeshCollider>().sharedMesh = Mesh;
     }
 
     // Update is called once per frame
@@ -42,6 +43,10 @@ public class VisualizeWorld : MonoBehaviour {
             Mesh.colors = colours.ToArray();
             Mesh.uv = uvs.ToArray();
             Mesh.RecalculateNormals();
+            Mesh.RecalculateBounds();
+            Mesh.RecalculateTangents();
+            GetComponent<MeshCollider>().sharedMesh = Mesh;
+            MeshChanged = false;
         }
 	}
 
@@ -60,6 +65,10 @@ public class VisualizeWorld : MonoBehaviour {
 
     public void AddCell(Cell newCell) {
         KnownCells.Add(newCell.Id, newCell);
+        if (KnownCells.Count % 100 == 0)
+        {
+            Debug.Log("Processed cells " + KnownCells.Count.ToString());
+        }
         // Retrieve colour for cell
         float red = 0.0f;
         float green = 0.0f;
@@ -102,11 +111,31 @@ public class VisualizeWorld : MonoBehaviour {
             triangles.Add(nextNodeVertexIndex);
             triangles.Add(centreVertexIndex);
         }
+    }
+
+    public void RedrawMesh()
+    {
         MeshChanged = true;
     }
 
     public void AddNodeVertex(string nodeId, Vector3 vertex)
     {
         NodeIdToVector3Position.Add(nodeId, vertex);
+    }
+
+    public Cell GetContainingCell(Vector3 targetPoint)
+    {
+        float closestDistance = 20f;
+        Cell closestCell = null;
+        foreach (var cell in KnownCells.Values)
+        {
+            var distance = Vector3.Distance(targetPoint, NodeIdToVector3Position[cell.Id]);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestCell = cell;
+            }
+        }
+        return closestCell;
     }
 }
