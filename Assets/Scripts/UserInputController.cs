@@ -34,6 +34,41 @@ public class UserInputController : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
+        HandleKeyInput();
+    }
+
+    private void FixedUpdate()
+    {
+        // Move camera to lon/lat position
+        worldCamera.transform.position = GeographicToCartesian(cameraLongitude, cameraLatitude) * (worldScale + cameraDistanceFromWorldSurface);
+        // Protect against flipping upside down
+        worldCamera.transform.up = Vector3.up;
+        // Turn back to look, one last time
+        worldCamera.transform.LookAt(cameraFocusPoint);
+    }
+
+    private Vector3 GeographicToCartesian(float longitude, float latitude)
+    {
+        return new Vector3(Mathf.Cos(Mathf.Deg2Rad*latitude) * Mathf.Cos(Mathf.Deg2Rad*longitude),
+                           Mathf.Sin(Mathf.Deg2Rad * latitude),
+                           Mathf.Cos(Mathf.Deg2Rad*latitude) * Mathf.Sin(Mathf.Deg2Rad*longitude));
+    }
+
+    private void PrintCameraLocation()
+    {
+        Debug.Log("Camera at lon/lat: " + cameraLongitude.ToString() + ", " + cameraLatitude.ToString());
+    }
+
+    private void CentreCameraOnHome()
+    {
+        cameraLatitude = 0.0f;
+        cameraCurrentLatitudeStep = 0f;
+        cameraLongitude = 0.0f;
+        cameraCurrentLongitudeStep = 0f;
+    }
+
+    private void HandleKeyInput()
+    {
         // Longitude
         bool longitudeChanged = false;
         if (Input.GetKey(KeyCode.LeftArrow))
@@ -103,35 +138,5 @@ public class UserInputController : MonoBehaviour {
         {
             CentreCameraOnHome();
         }
-    }
-
-    private void FixedUpdate()
-    {
-        // Move camera to lon/lat position
-        worldCamera.transform.position = GeographicToCartesian(cameraLongitude, cameraLatitude) * (worldScale + cameraDistanceFromWorldSurface);
-        // Protect against flipping upside down
-        worldCamera.transform.up = Vector3.up;
-        // Turn back to look, one last time
-        worldCamera.transform.LookAt(cameraFocusPoint);
-    }
-
-    private Vector3 GeographicToCartesian(float longitude, float latitude)
-    {
-        return new Vector3(Mathf.Cos(Mathf.Deg2Rad*latitude) * Mathf.Cos(Mathf.Deg2Rad*longitude),
-                           Mathf.Sin(Mathf.Deg2Rad * latitude),
-                           Mathf.Cos(Mathf.Deg2Rad*latitude) * Mathf.Sin(Mathf.Deg2Rad*longitude));
-    }
-
-    private void PrintCameraLocation()
-    {
-        Debug.Log("Camera at lon/lat: " + cameraLongitude.ToString() + ", " + cameraLatitude.ToString());
-    }
-
-    private void CentreCameraOnHome()
-    {
-        cameraLatitude = 0.0f;
-        cameraCurrentLatitudeStep = 0f;
-        cameraLongitude = 0.0f;
-        cameraCurrentLongitudeStep = 0f;
     }
 }
