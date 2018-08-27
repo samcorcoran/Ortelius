@@ -6,7 +6,10 @@ public class UserInputController : MonoBehaviour {
 
     VisualizeWorld WorldVisualizer;
 
+    public float worldViewportSize = 0.75f;
     Camera worldCamera;
+    Camera mainCamera;
+
     Vector3 cameraFocusPoint = Vector3.zero;
 
     float worldScale = 6.371f;
@@ -30,15 +33,32 @@ public class UserInputController : MonoBehaviour {
     // Use this for initialization
     void Start () {
         WorldVisualizer = GetComponentInParent<VisualizeWorld>();
-        worldCamera = Camera.main;
+        mainCamera = Camera.main;
+        foreach (var camera in Camera.allCameras)
+        {
+            if (camera.tag == "WorldCamera")
+            {
+                worldCamera = camera;
+                break;
+            }
+        }
         worldCamera.transform.LookAt(cameraFocusPoint);
 	}
+
+    private void UpdateCameraRects()
+    {
+        worldViewportSize = Mathf.Max(worldViewportSize, 0);
+        worldViewportSize = Mathf.Min(worldViewportSize, 1);
+        worldCamera.rect = new Rect(0, 0, worldViewportSize, 1);
+        mainCamera.rect = new Rect(worldViewportSize, 0, 1 - worldViewportSize, 1);
+    }
 
     // Update is called once per frame
     void Update()
     {
         HandleKeyInput();
         HandleMouseInput();
+        UpdateCameraRects();
     }
 
     private void FixedUpdate()
@@ -147,7 +167,7 @@ public class UserInputController : MonoBehaviour {
     public void HandleMouseInput()
     {
         // Get mouse screen position
-        Ray placefinder = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray placefinder = worldCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(placefinder, out hit, 300))
         {

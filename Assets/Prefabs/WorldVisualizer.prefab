@@ -98,7 +98,7 @@ MeshCollider:
   serializedVersion: 3
   m_Convex: 1
   m_CookingOptions: -1
-  m_SkinWidth: 0.01
+  m_SkinWidth: 0.001
   m_Mesh: {fileID: 0}
 --- !u!114 &114080245308105818
 MonoBehaviour:
@@ -111,15 +111,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 865fcc38be8dbec4a873f9fb5dc0dfbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraLatitude: 0
+  cameraLatitude: 68.30003
   cameraLatitudeMaxStep: 7
-  cameraCurrentLatitudeStep: 0
+  cameraCurrentLatitudeStep: 0.01
   cameraLatitudeStepAcceleration: 1
   cameraLatitudeStepDecay: 0.05
   cameraLatitudeMinStep: 0.01
-  cameraLongitude: 0
+  cameraLongitude: -142.44
   cameraLongitudeMaxStep: 10
-  cameraCurrentLongitudeStep: 0
+  cameraCurrentLongitudeStep: 0.01
   cameraLongitudeStepAcceleration: 1
   cameraLongitudeStepDecay: 0.05
   cameraLongitudeMinStep: 0.01
