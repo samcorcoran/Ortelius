@@ -6,6 +6,8 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class VisualizeWorld : MonoBehaviour {
 
+    private PanelInfoController panelInfoController;
+
     private static Color HOVERED_CELL_COLOUR = Color.magenta;
     private static Color SELECTED_CELL_COLOUR = Color.red;
 
