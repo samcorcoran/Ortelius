@@ -16,6 +16,6 @@ public class SunMovement : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-        transform.RotateAround(Vector3.up, MovementSpeed*Time.deltaTime);
+        transform.Rotate(Vector3.up, MovementSpeed*Time.deltaTime);
     }
 }
